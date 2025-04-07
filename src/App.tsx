@@ -9,29 +9,30 @@ import Footer from './components/Footer';
 import ErrorNotification from './components/ErrorNotification';
 import TodoList from './components/TodoList';
 
+export enum Filter {
+  All = 'All',
+  Active = 'Active',
+  Completed = 'Completed',
+}
+
 export const App: React.FC = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
-  const [filteredTodos, setFilteredTodos] = useState<Todo[]>([]);
 
   const [error, setError] = useState('');
-  //const [isLoading, setIsLoading] = useState(false);
-  const [selectedNav, setSelectedNav] = useState('all');
+  const [selectedNav, setSelectedNav] = useState(Filter.All);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const loadTodos = async () => {
     setError('');
 
-    //setIsLoading(true);
     try {
       const res = await getTodos();
 
-      setFilteredTodos(res);
       setTodos(res);
     } catch (err) {
       setError('Unable to load todos');
     } finally {
       inputRef.current?.focus();
-      //setIsLoading(false);
     }
   };
 
@@ -51,23 +52,22 @@ export const App: React.FC = () => {
     return;
   }, [error]);
 
+  const filteredTodos = todos.filter(todo => {
+    switch (selectedNav) {
+      case Filter.Active:
+        return !todo.completed;
+      case Filter.Completed:
+        return todo.completed;
+      default:
+        return true;
+    }
+  });
+
   const handelFilter = (e: React.MouseEvent) => {
     const filter =
-      e.currentTarget.getAttribute('href')?.replace('#/', '') || 'all';
+      e.currentTarget.getAttribute('href')?.replace('#', '') || Filter.All;
 
-    switch (filter) {
-      case 'active':
-        setFilteredTodos(todos.filter(todo => !todo.completed));
-        setSelectedNav('active');
-        break;
-      case 'completed':
-        setFilteredTodos(todos.filter(todo => todo.completed));
-        setSelectedNav('completed');
-        break;
-      default:
-        setFilteredTodos(todos);
-        setSelectedNav('all');
-    }
+    setSelectedNav(filter as Filter);
   };
 
   return (
@@ -79,7 +79,6 @@ export const App: React.FC = () => {
 
         <TodoList filteredTodos={filteredTodos} />
 
-        {/* Hide the footer if there are no todos */}
         {todos.length !== 0 && (
           <Footer
             todos={todos}
@@ -89,8 +88,6 @@ export const App: React.FC = () => {
         )}
       </div>
 
-      {/* DON'T use conditional rendering to hide the notification */}
-      {/* Add the 'hidden' class to hide the message smoothly */}
       <ErrorNotification error={error} setError={setError} />
     </div>
   );

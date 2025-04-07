@@ -5,12 +5,14 @@ type Props = {
 };
 
 const TodoItem = ({ todo }: Props) => {
+  const { id, title, completed } = todo;
+
   return (
     <div
       data-cy="Todo"
-      key={todo.id}
+      key={id}
       className={classNames('todo', {
-        completed: todo.completed,
+        completed: completed,
       })}
     >
       {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
@@ -19,11 +21,11 @@ const TodoItem = ({ todo }: Props) => {
           data-cy="TodoStatus"
           type="checkbox"
           className="todo__status"
-          defaultChecked={todo.completed}
+          defaultChecked={completed}
         />
       </label>
       <span data-cy="TodoTitle" className="todo__title">
-        {todo.title}
+        {title}
       </span>
       <button type="button" className="todo__remove" data-cy="TodoDelete">
         ×
